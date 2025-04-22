@@ -1,0 +1,851 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Check if GUI already exists and remove it
+local existingGui = playerGui:FindFirstChild("RemoteFirerUI")
+if existingGui then
+    existingGui:Destroy()
+end
+
+-- Create main UI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "RemoteFirerUI"
+screenGui.Parent = playerGui
+
+-- UI Theme
+local theme = {
+    Background = Color3.fromRGB(30, 30, 40),
+    DarkBackground = Color3.fromRGB(20, 20, 30),
+    LightBackground = Color3.fromRGB(40, 40, 50),
+    Accent = Color3.fromRGB(100, 150, 255),
+    Text = Color3.fromRGB(240, 240, 240),
+    SecondaryText = Color3.fromRGB(180, 180, 180),
+    Success = Color3.fromRGB(80, 200, 120),
+    Danger = Color3.fromRGB(220, 80, 80),
+    Warning = Color3.fromRGB(220, 180, 60)
+}
+
+-- Corner radius function
+local function applyCornerRadius(instance, radius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, radius)
+    corner.Parent = instance
+end
+
+-- Minimized button
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 150, 0, 30)
+minimizeButton.Position = UDim2.new(0, 10, 0, 10)
+minimizeButton.BackgroundColor3 = theme.Accent
+minimizeButton.Text = "Open Remote Firer"
+minimizeButton.TextColor3 = theme.Text
+minimizeButton.Font = Enum.Font.GothamBold
+minimizeButton.TextSize = 14
+minimizeButton.ZIndex = 10
+applyCornerRadius(minimizeButton, 6)
+minimizeButton.Parent = screenGui
+
+-- Main frame (initially visible)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 400, 0, 450)
+mainFrame.Position = UDim2.new(0, 10, 0, 10)
+mainFrame.BackgroundColor3 = theme.Background
+mainFrame.Visible = true
+mainFrame.ZIndex = 10
+applyCornerRadius(mainFrame, 8)
+mainFrame.Parent = screenGui
+
+-- Drop shadow effect
+local shadow = Instance.new("ImageLabel")
+shadow.Name = "Shadow"
+shadow.Size = UDim2.new(1, 10, 1, 10)
+shadow.Position = UDim2.new(0, -5, 0, -5)
+shadow.BackgroundTransparency = 1
+shadow.Image = "rbxassetid://1316045217"
+shadow.ImageColor3 = Color3.new(0, 0, 0)
+shadow.ImageTransparency = 0.8
+shadow.ScaleType = Enum.ScaleType.Slice
+shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+shadow.ZIndex = 9
+shadow.Parent = mainFrame
+
+-- Title bar with buttons
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 30)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = theme.DarkBackground
+titleBar.ZIndex = 11
+applyCornerRadius(titleBar, 8)
+titleBar.Parent = mainFrame
+
+local titleText = Instance.new("TextLabel")
+titleText.Size = UDim2.new(1, -100, 1, 0)
+titleText.Position = UDim2.new(0, 10, 0, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "Remote Firer"
+titleText.TextColor3 = theme.Text
+titleText.Font = Enum.Font.GothamBold
+titleText.TextSize = 16
+titleText.TextXAlignment = Enum.TextXAlignment.Left
+titleText.ZIndex = 11
+titleText.Parent = titleBar
+
+-- Window controls
+local controlsFrame = Instance.new("Frame")
+controlsFrame.Size = UDim2.new(0, 80, 1, 0)
+controlsFrame.Position = UDim2.new(1, -80, 0, 0)
+controlsFrame.BackgroundTransparency = 1
+controlsFrame.ZIndex = 11
+controlsFrame.Parent = titleBar
+
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 25, 0, 25)
+minimizeBtn.Position = UDim2.new(0, 5, 0.5, -12.5)
+minimizeBtn.BackgroundColor3 = theme.Warning
+minimizeBtn.Text = "_"
+minimizeBtn.TextColor3 = theme.Text
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextSize = 16
+minimizeBtn.ZIndex = 11
+applyCornerRadius(minimizeBtn, 6)
+minimizeBtn.Parent = controlsFrame
+
+local maximizeBtn = Instance.new("TextButton")
+maximizeBtn.Size = UDim2.new(0, 25, 0, 25)
+maximizeBtn.Position = UDim2.new(0, 35, 0.5, -12.5)
+maximizeBtn.BackgroundColor3 = theme.Success
+maximizeBtn.Text = "□"
+maximizeBtn.TextColor3 = theme.Text
+maximizeBtn.Font = Enum.Font.GothamBold
+maximizeBtn.TextSize = 14
+maximizeBtn.ZIndex = 11
+applyCornerRadius(maximizeBtn, 6)
+maximizeBtn.Parent = controlsFrame
+
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 25, 0, 25)
+closeButton.Position = UDim2.new(0, 65, 0.5, -12.5)
+closeButton.BackgroundColor3 = theme.Danger
+closeButton.Text = "X"
+closeButton.TextColor3 = theme.Text
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 14
+closeButton.ZIndex = 11
+applyCornerRadius(closeButton, 6)
+closeButton.Parent = controlsFrame
+
+-- Tabs for different modes
+local tabsFrame = Instance.new("Frame")
+tabsFrame.Size = UDim2.new(1, 0, 0, 30)
+tabsFrame.Position = UDim2.new(0, 0, 0, 30)
+tabsFrame.BackgroundTransparency = 1
+tabsFrame.ZIndex = 11
+tabsFrame.Parent = mainFrame
+
+local loopTab = Instance.new("TextButton")
+loopTab.Size = UDim2.new(0.25, 0, 1, 0)
+loopTab.Position = UDim2.new(0, 0, 0, 0)
+loopTab.BackgroundColor3 = theme.LightBackground
+loopTab.Text = "Loop"
+loopTab.TextColor3 = theme.Text
+loopTab.Font = Enum.Font.GothamBold
+loopTab.TextSize = 14
+loopTab.ZIndex = 11
+applyCornerRadius(loopTab, 6)
+loopTab.Parent = tabsFrame
+
+local singleTab = Instance.new("TextButton")
+singleTab.Size = UDim2.new(0.25, 0, 1, 0)
+singleTab.Position = UDim2.new(0.25, 0, 0, 0)
+singleTab.BackgroundColor3 = theme.DarkBackground
+singleTab.Text = "Single"
+singleTab.TextColor3 = theme.SecondaryText
+singleTab.Font = Enum.Font.GothamBold
+singleTab.TextSize = 14
+singleTab.ZIndex = 11
+applyCornerRadius(singleTab, 6)
+singleTab.Parent = tabsFrame
+
+local unitsTab = Instance.new("TextButton")
+unitsTab.Size = UDim2.new(0.25, 0, 1, 0)
+unitsTab.Position = UDim2.new(0.5, 0, 0, 0)
+unitsTab.BackgroundColor3 = theme.DarkBackground
+unitsTab.Text = "Units"
+unitsTab.TextColor3 = theme.SecondaryText
+unitsTab.Font = Enum.Font.GothamBold
+unitsTab.TextSize = 14
+unitsTab.ZIndex = 11
+applyCornerRadius(unitsTab, 6)
+unitsTab.Parent = tabsFrame
+
+local settingsTab = Instance.new("TextButton")
+settingsTab.Size = UDim2.new(0.25, 0, 1, 0)
+settingsTab.Position = UDim2.new(0.75, 0, 0, 0)
+settingsTab.BackgroundColor3 = theme.DarkBackground
+settingsTab.Text = "Settings"
+settingsTab.TextColor3 = theme.SecondaryText
+settingsTab.Font = Enum.Font.GothamBold
+settingsTab.TextSize = 14
+settingsTab.ZIndex = 11
+applyCornerRadius(settingsTab, 6)
+settingsTab.Parent = tabsFrame
+
+-- Content frames
+local contentFrame = Instance.new("Frame")
+contentFrame.Size = UDim2.new(1, -20, 1, -110)
+contentFrame.Position = UDim2.new(0, 10, 0, 70)
+contentFrame.BackgroundTransparency = 1
+contentFrame.ZIndex = 10
+contentFrame.Parent = mainFrame
+
+-- Loop Mode Frame
+local loopFrame = Instance.new("Frame")
+loopFrame.Size = UDim2.new(1, 0, 1, 0)
+loopFrame.BackgroundTransparency = 1
+loopFrame.Visible = true
+loopFrame.ZIndex = 10
+loopFrame.Parent = contentFrame
+
+-- Function to create input fields
+local function createInputField(labelText, defaultText, parent, rowIndex, yOffset)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 20)
+    label.Position = UDim2.new(0, 0, 0, yOffset)
+    label.BackgroundTransparency = 1
+    label.Text = labelText
+    label.TextColor3 = theme.SecondaryText
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 16
+    label.ZIndex = 10
+    label.Parent = parent
+    
+    local textBox = Instance.new("TextBox")
+    textBox.Size = UDim2.new(1, 0, 0, 30)
+    textBox.Position = UDim2.new(0, 0, 0, yOffset + 25)
+    textBox.BackgroundColor3 = theme.LightBackground
+    textBox.TextColor3 = theme.Text
+    textBox.Font = Enum.Font.Gotham
+    textBox.TextSize = 16
+    textBox.Text = defaultText
+    textBox.ZIndex = 10
+    applyCornerRadius(textBox, 6)
+    textBox.Parent = parent
+    
+    return textBox
+end
+
+-- Ability Name input
+local abilityNameBox = createInputField("Ability Name:", "Savior of AWTD", loopFrame, 0, 10)
+
+-- Unit Name input
+local unitNameBox = createInputField("Unit Name (if not using selector):", "The Fear", loopFrame, 1, 60)
+
+-- Delay input
+local delayBox = createInputField("Delay (seconds):", "5", loopFrame, 2, 110)
+delayBox.Size = UDim2.new(0.3, -10, 0, 30)
+
+-- Start/Stop button
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0.6, -20, 0, 30)
+toggleButton.Position = UDim2.new(0.4, 10, 0, 145)
+toggleButton.BackgroundColor3 = theme.Success
+toggleButton.TextColor3 = theme.Text
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextSize = 16
+toggleButton.Text = "Start"
+toggleButton.ZIndex = 10
+applyCornerRadius(toggleButton, 6)
+toggleButton.Parent = loopFrame
+
+-- Status display
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, 0, 0, 20)
+statusLabel.Position = UDim2.new(0, 0, 1, -25)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Status: Idle"
+statusLabel.TextColor3 = theme.SecondaryText
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 14
+statusLabel.ZIndex = 10
+statusLabel.Parent = loopFrame
+
+-- Single Fire Frame
+local singleFrame = Instance.new("Frame")
+singleFrame.Size = UDim2.new(1, 0, 1, 0)
+singleFrame.BackgroundTransparency = 1
+singleFrame.Visible = false
+singleFrame.ZIndex = 10
+singleFrame.Parent = contentFrame
+
+-- Ability Name input for single fire
+local singleAbilityBox = createInputField("Ability Name:", "Savior of AWTD", singleFrame, 0, 10)
+
+-- Unit Name input for single fire
+local singleUnitBox = createInputField("Unit Name (if not using selector):", "The Fear", singleFrame, 1, 60)
+
+-- Fire button for single mode
+local fireButton = Instance.new("TextButton")
+fireButton.Size = UDim2.new(1, -20, 0, 40)
+fireButton.Position = UDim2.new(0, 10, 0, 150)
+fireButton.BackgroundColor3 = theme.Accent
+fireButton.TextColor3 = theme.Text
+fireButton.Font = Enum.Font.GothamBold
+fireButton.TextSize = 16
+fireButton.Text = "FIRE ONCE"
+fireButton.ZIndex = 10
+applyCornerRadius(fireButton, 6)
+fireButton.Parent = singleFrame
+
+-- Unit Selector Frame
+local unitsFrame = Instance.new("Frame")
+unitsFrame.Size = UDim2.new(1, 0, 1, 0)
+unitsFrame.BackgroundTransparency = 1
+unitsFrame.Visible = false
+unitsFrame.ZIndex = 10
+unitsFrame.Parent = contentFrame
+
+-- Refresh button
+local refreshButton = Instance.new("TextButton")
+refreshButton.Size = UDim2.new(1, -20, 0, 30)
+refreshButton.Position = UDim2.new(0, 10, 0, 10)
+refreshButton.BackgroundColor3 = theme.Accent
+refreshButton.Text = "Refresh Unit List"
+refreshButton.TextColor3 = theme.Text
+refreshButton.Font = Enum.Font.GothamBold
+refreshButton.TextSize = 16
+refreshButton.ZIndex = 10
+applyCornerRadius(refreshButton, 6)
+refreshButton.Parent = unitsFrame
+
+-- Unit selection scroll frame
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(1, -20, 1, -50)
+scrollFrame.Position = UDim2.new(0, 10, 0, 50)
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.ScrollBarThickness = 8
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrollFrame.ZIndex = 10
+scrollFrame.Parent = unitsFrame
+
+local uiListLayout = Instance.new("UIListLayout")
+uiListLayout.Padding = UDim.new(0, 5)
+uiListLayout.Parent = scrollFrame
+
+-- Settings Frame
+local settingsFrame = Instance.new("Frame")
+settingsFrame.Size = UDim2.new(1, 0, 1, 0)
+settingsFrame.BackgroundTransparency = 1
+settingsFrame.Visible = false
+settingsFrame.ZIndex = 10
+settingsFrame.Parent = contentFrame
+
+-- UI Scale settings
+local scaleLabel = Instance.new("TextLabel")
+scaleLabel.Size = UDim2.new(1, 0, 0, 20)
+scaleLabel.Position = UDim2.new(0, 0, 0, 10)
+scaleLabel.BackgroundTransparency = 1
+scaleLabel.Text = "UI Scale:"
+scaleLabel.TextColor3 = theme.Text
+scaleLabel.Font = Enum.Font.Gotham
+scaleLabel.TextSize = 16
+scaleLabel.TextXAlignment = Enum.TextXAlignment.Left
+scaleLabel.ZIndex = 10
+scaleLabel.Parent = settingsFrame
+
+local scaleSlider = Instance.new("Frame")
+scaleSlider.Size = UDim2.new(1, 0, 0, 30)
+scaleSlider.Position = UDim2.new(0, 0, 0, 40)
+scaleSlider.BackgroundTransparency = 1
+scaleSlider.ZIndex = 10
+scaleSlider.Parent = settingsFrame
+
+local sliderTrack = Instance.new("Frame")
+sliderTrack.Size = UDim2.new(1, 0, 0, 6)
+sliderTrack.Position = UDim2.new(0, 0, 0.5, -3)
+sliderTrack.BackgroundColor3 = theme.LightBackground
+sliderTrack.ZIndex = 10
+applyCornerRadius(sliderTrack, 3)
+sliderTrack.Parent = scaleSlider
+
+local sliderFill = Instance.new("Frame")
+sliderFill.Size = UDim2.new(0.5, 0, 1, 0)
+sliderFill.BackgroundColor3 = theme.Accent
+sliderFill.ZIndex = 11
+applyCornerRadius(sliderFill, 3)
+sliderFill.Parent = sliderTrack
+
+local sliderThumb = Instance.new("Frame")
+sliderThumb.Size = UDim2.new(0, 16, 0, 16)
+sliderThumb.Position = UDim2.new(0.5, -8, 0.5, -8)
+sliderThumb.BackgroundColor3 = theme.Text
+sliderThumb.ZIndex = 12
+applyCornerRadius(sliderThumb, 8)
+sliderThumb.Parent = scaleSlider
+
+local scaleMinLabel = Instance.new("TextLabel")
+scaleMinLabel.Size = UDim2.new(0, 40, 0, 20)
+scaleMinLabel.Position = UDim2.new(0, 0, 1, 5)
+scaleMinLabel.BackgroundTransparency = 1
+scaleMinLabel.Text = "50%"
+scaleMinLabel.TextColor3 = theme.SecondaryText
+scaleMinLabel.Font = Enum.Font.Gotham
+scaleMinLabel.TextSize = 14
+scaleMinLabel.TextXAlignment = Enum.TextXAlignment.Left
+scaleMinLabel.ZIndex = 10
+scaleMinLabel.Parent = scaleSlider
+
+local scaleMaxLabel = Instance.new("TextLabel")
+scaleMaxLabel.Size = UDim2.new(0, 40, 0, 20)
+scaleMaxLabel.Position = UDim2.new(1, -40, 1, 5)
+scaleMaxLabel.BackgroundTransparency = 1
+scaleMaxLabel.Text = "150%"
+scaleMaxLabel.TextColor3 = theme.SecondaryText
+scaleMaxLabel.Font = Enum.Font.Gotham
+scaleMaxLabel.TextSize = 14
+scaleMaxLabel.TextXAlignment = Enum.TextXAlignment.Right
+scaleMaxLabel.ZIndex = 10
+scaleMaxLabel.Parent = scaleSlider
+
+local scaleValueLabel = Instance.new("TextLabel")
+scaleValueLabel.Size = UDim2.new(1, 0, 0, 20)
+scaleValueLabel.Position = UDim2.new(0, 0, 0, 80)
+scaleValueLabel.BackgroundTransparency = 1
+scaleValueLabel.Text = "Current Scale: 100%"
+scaleValueLabel.TextColor3 = theme.Text
+scaleValueLabel.Font = Enum.Font.GothamBold
+scaleValueLabel.TextSize = 16
+scaleValueLabel.ZIndex = 10
+scaleValueLabel.Parent = settingsFrame
+
+-- Credits
+local creditsLabel = Instance.new("TextLabel")
+creditsLabel.Size = UDim2.new(1, 0, 0, 20)
+creditsLabel.Position = UDim2.new(0, 0, 1, -30)
+creditsLabel.BackgroundTransparency = 1
+creditsLabel.Text = "Made by Makoto and 141ms"
+creditsLabel.TextColor3 = theme.SecondaryText
+creditsLabel.Font = Enum.Font.Gotham
+creditsLabel.TextSize = 14
+creditsLabel.ZIndex = 10
+creditsLabel.Parent = settingsFrame
+
+-- Get units from slots 1-6
+local function getAvailableUnits()
+    local units = {}
+    local interface = playerGui:FindFirstChild("InterFace")
+    if interface then
+        local equip = interface:FindFirstChild("Equip")
+        if equip then
+            local grid = equip:FindFirstChild("Grid")
+            if grid then
+                for i = 1, 6 do
+                    local slot = grid:FindFirstChild("Slot_"..i)
+                    if slot then
+                        local viewport = slot:FindFirstChild("ViewportFrame")
+                        if viewport then
+                            local worldModel = viewport:FindFirstChild("WorldModel")
+                            if worldModel then
+                                for _, child in ipairs(worldModel:GetChildren()) do
+                                    if child:IsA("Model") then
+                                        table.insert(units, {
+                                            name = child.Name,
+                                            slot = i
+                                        })
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return units
+end
+
+-- Create checkboxes for available units
+local unitCheckboxes = {}
+local function populateUnitDropdown()
+    -- Preserve checked states before clearing
+    local previousStates = {}
+    for _, cb in ipairs(unitCheckboxes) do
+        if type(cb) == "table" and cb.unitName then
+            previousStates[cb.unitName] = cb._checked or false
+        end
+    end
+
+    for _, checkbox in ipairs(unitCheckboxes) do
+        if type(checkbox) == "table" and checkbox.frame then
+            checkbox.frame:Destroy()
+        elseif typeof(checkbox) == "Instance" then
+            checkbox:Destroy()
+        end
+    end
+    unitCheckboxes = {}
+
+    local units = getAvailableUnits()
+    if #units == 0 then
+        local noUnitsLabel = Instance.new("TextLabel")
+        noUnitsLabel.Size = UDim2.new(1, 0, 0, 30)
+        noUnitsLabel.BackgroundTransparency = 1
+        noUnitsLabel.Text = "No units found in slots 1-6"
+        noUnitsLabel.TextColor3 = theme.SecondaryText
+        noUnitsLabel.Font = Enum.Font.Gotham
+        noUnitsLabel.TextSize = 14
+        noUnitsLabel.ZIndex = 10
+        noUnitsLabel.Parent = scrollFrame
+        table.insert(unitCheckboxes, {frame = noUnitsLabel})
+    else
+        for _, unit in ipairs(units) do
+            local checkboxFrame = Instance.new("Frame")
+            checkboxFrame.Size = UDim2.new(1, 0, 0, 30)
+            checkboxFrame.BackgroundTransparency = 1
+            checkboxFrame.ZIndex = 10
+            checkboxFrame.Parent = scrollFrame
+
+            local checkbox = Instance.new("TextButton")
+            checkbox.Size = UDim2.new(0, 20, 0, 20)
+            checkbox.Position = UDim2.new(0, 5, 0.5, -10)
+            checkbox.BackgroundColor3 = theme.LightBackground
+            checkbox.Text = ""
+            checkbox.ZIndex = 10
+            applyCornerRadius(checkbox, 4)
+            checkbox.Parent = checkboxFrame
+
+            local checkmark = Instance.new("TextLabel")
+            checkmark.Size = UDim2.new(1, 0, 1, 0)
+            checkmark.BackgroundTransparency = 1
+            checkmark.Text = "✓"
+            checkmark.TextColor3 = theme.Success
+            checkmark.Visible = false
+            checkmark.ZIndex = 11
+            checkmark.Parent = checkbox
+
+            local unitLabel = Instance.new("TextLabel")
+            unitLabel.Size = UDim2.new(1, -30, 1, 0)
+            unitLabel.Position = UDim2.new(0, 30, 0, 0)
+            unitLabel.BackgroundTransparency = 1
+            unitLabel.Text = unit.name .. " (Slot "..unit.slot..")"
+            unitLabel.TextColor3 = theme.Text
+            unitLabel.TextXAlignment = Enum.TextXAlignment.Left
+            unitLabel.Font = Enum.Font.Gotham
+            unitLabel.TextSize = 14
+            unitLabel.ZIndex = 10
+            unitLabel.Parent = checkboxFrame
+
+            local checked = previousStates[unit.name] or false
+            checkmark.Visible = checked
+
+            checkbox.MouseButton1Click:Connect(function()
+                checked = not checked
+                checkmark.Visible = checked
+                -- Update the checked state in the checkbox table
+                for _, cb in ipairs(unitCheckboxes) do
+                    if cb.checkbox == checkbox then
+                        cb._checked = checked
+                        break
+                    end
+                end
+            end)
+
+            table.insert(unitCheckboxes, {
+                frame = checkboxFrame,
+                checkbox = checkbox,
+                checkmark = checkmark,
+                unitName = unit.name,
+                _checked = checked,
+                checked = function(self) return self._checked end
+            })
+        end
+    end
+
+    -- Update canvas size
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, uiListLayout.AbsoluteContentSize.Y)
+end
+
+-- Get selected units from checkboxes
+local function getSelectedUnits()
+    local selected = {}
+    for _, checkbox in ipairs(unitCheckboxes) do
+        if type(checkbox) == "table" and checkbox.checked and type(checkbox.checked) == "function" and checkbox:checked() then
+            table.insert(selected, checkbox.unitName)
+        end
+    end
+    return selected
+end
+
+-- Script variables
+local running = false
+local connection = nil
+local currentScale = 1
+local isMaximized = false
+local originalSize = UDim2.new(0, 400, 0, 450)
+local originalPosition = UDim2.new(0, 10, 0, 10)
+
+-- Update status function
+local function updateStatus(text)
+    statusLabel.Text = "Status: " .. text
+end
+
+-- Toggle UI visibility
+local function toggleUI(visible)
+    mainFrame.Visible = visible
+    minimizeButton.Visible = not visible
+    shadow.Visible = visible
+end
+
+-- Switch between tabs
+local function switchTab(tab)
+    loopFrame.Visible = (tab == "loop")
+    singleFrame.Visible = (tab == "single")
+    unitsFrame.Visible = (tab == "units")
+    settingsFrame.Visible = (tab == "settings")
+
+    loopTab.BackgroundColor3 = (tab == "loop") and theme.LightBackground or theme.DarkBackground
+    singleTab.BackgroundColor3 = (tab == "single") and theme.LightBackground or theme.DarkBackground
+    unitsTab.BackgroundColor3 = (tab == "units") and theme.LightBackground or theme.DarkBackground
+    settingsTab.BackgroundColor3 = (tab == "settings") and theme.LightBackground or theme.DarkBackground
+
+    loopTab.TextColor3 = (tab == "loop") and theme.Text or theme.SecondaryText
+    singleTab.TextColor3 = (tab == "single") and theme.Text or theme.SecondaryText
+    unitsTab.TextColor3 = (tab == "units") and theme.Text or theme.SecondaryText
+    settingsTab.TextColor3 = (tab == "settings") and theme.Text or theme.SecondaryText
+end
+
+-- Apply UI scale
+local function applyUIScale(scale)
+    currentScale = scale
+    scaleValueLabel.Text = "Current Scale: "..math.floor(scale * 100).."%"
+
+    local tweenInfo = TweenInfo.new(0.2)
+
+    -- Scale main window
+    local mainTween = TweenService:Create(mainFrame, tweenInfo, {
+        Size = UDim2.new(0, originalSize.X.Offset * scale, 0, originalSize.Y.Offset * scale)
+    })
+    mainTween:Play()
+end
+
+-- Toggle maximize window
+local function toggleMaximize()
+    isMaximized = not isMaximized
+    if isMaximized then
+        mainFrame.Size = UDim2.new(0.9, 0, 0.9, 0)
+        mainFrame.Position = UDim2.new(0.05, 0, 0.05, 0)
+        maximizeBtn.Text = "❐"
+    else
+        mainFrame.Size = originalSize
+        mainFrame.Position = originalPosition
+        maximizeBtn.Text = "□"
+    end
+end
+
+-- Start/Stop button functionality for loop mode
+toggleButton.MouseButton1Click:Connect(function()
+    running = not running
+
+    if running then
+        toggleButton.Text = "Stop"
+        toggleButton.BackgroundColor3 = theme.Danger
+        updateStatus("Starting...")
+
+        -- Get values from input boxes
+        local abilityName = abilityNameBox.Text
+        local delay = tonumber(delayBox.Text) or 5
+
+        -- Get selected units from checkboxes or fallback to manual input
+        local selectedUnits = getSelectedUnits()
+        if #selectedUnits == 0 then
+            selectedUnits = {unitNameBox.Text}
+        end
+
+        -- Start the loop in a separate thread
+        connection = task.spawn(function()
+            while running do
+                for _, unitName in ipairs(selectedUnits) do
+                    if not running then break end
+
+                    local args = {
+                        [1] = abilityName,
+                        [2] = workspace:WaitForChild("Units"):WaitForChild(unitName)
+                    }
+
+                    updateStatus("Firing at "..unitName)
+
+                    -- Try to fire the remote
+                    local success, err = pcall(function()
+                        ReplicatedStorage:WaitForChild("Remote"):WaitForChild("UnitAbility"):FireServer(unpack(args))
+                    end)
+
+                    if not success then
+                        updateStatus("Error: " .. tostring(err))
+                    end
+
+                    -- Small delay between units
+                    task.wait(0.1)
+                end
+
+                if not running then break end
+
+                updateStatus("Waiting "..delay.." seconds")
+
+                -- Wait with interrupt capability
+                local elapsed = 0
+                while elapsed < delay and running do
+                    task.wait(0.1)
+                    elapsed = elapsed + 0.1
+                    updateStatus("Waiting "..string.format("%.1f", delay - elapsed).."s")
+                end
+            end
+
+            updateStatus("Stopped")
+        end)
+    else
+        toggleButton.Text = "Start"
+        toggleButton.BackgroundColor3 = theme.Success
+
+        if connection then
+            task.cancel(connection)
+            connection = nil
+        end
+    end
+end)
+
+-- Fire button functionality for single mode
+fireButton.MouseButton1Click:Connect(function()
+    local abilityName = singleAbilityBox.Text
+
+    -- Get selected units from checkboxes or fallback to manual input
+    local selectedUnits = getSelectedUnits()
+    if #selectedUnits == 0 then
+        selectedUnits = {singleUnitBox.Text}
+    end
+
+    for _, unitName in ipairs(selectedUnits) do
+        local args = {
+            [1] = abilityName,
+            [2] = workspace:WaitForChild("Units"):WaitForChild(unitName)
+        }
+
+        -- Fire once without any status updates
+        pcall(function()
+            ReplicatedStorage:WaitForChild("Remote"):WaitForChild("UnitAbility"):FireServer(unpack(args))
+        end)
+    end
+end)
+
+-- Refresh button functionality
+refreshButton.MouseButton1Click:Connect(function()
+    populateUnitDropdown()
+end)
+
+-- Close button functionality
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Minimize button functionality
+minimizeBtn.MouseButton1Click:Connect(function()
+    toggleUI(false)
+end)
+
+-- Maximize button functionality
+maximizeBtn.MouseButton1Click:Connect(function()
+    toggleMaximize()
+end)
+
+-- Minimized button functionality
+minimizeButton.MouseButton1Click:Connect(function()
+    toggleUI(true)
+end)
+
+-- Tab switching functionality
+loopTab.MouseButton1Click:Connect(function()
+    switchTab("loop")
+end)
+
+singleTab.MouseButton1Click:Connect(function()
+    switchTab("single")
+end)
+
+unitsTab.MouseButton1Click:Connect(function()
+    switchTab("units")
+    populateUnitDropdown()
+end)
+
+settingsTab.MouseButton1Click:Connect(function()
+    switchTab("settings")
+end)
+
+-- Scale slider functionality
+local function updateScaleSlider(pos)
+    local percent = math.clamp((pos.X.Offset - scaleSlider.AbsolutePosition.X) / scaleSlider.AbsoluteSize.X, 0, 1)
+    local scale = 0.5 + percent -- Range from 0.5 to 1.5
+    sliderFill.Size = UDim2.new(percent, 0, 1, 0)
+    sliderThumb.Position = UDim2.new(percent, -8, 0.5, -8)
+    scaleValueLabel.Text = "Current Scale: "..math.floor(scale * 100).."%"
+end
+
+scaleSlider.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        updateScaleSlider(input.Position)
+        
+        local connection
+        connection = UserInputService.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement then
+                updateScaleSlider(input.Position)
+            end
+        end)
+
+        UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                connection:Disconnect()
+                
+                -- Apply the scale
+                local percent = sliderFill.Size.X.Scale
+                local scale = 0.5 + percent
+                applyUIScale(scale)
+            end
+        end)
+    end
+end)
+
+-- Make window draggable
+local dragging = false
+local dragStart = Vector2.new(0, 0)
+local frameStart = Vector2.new(0, 0)
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and not isMaximized then
+        dragging = true
+        dragStart = input.Position
+        frameStart = mainFrame.Position
+    end
+end)
+
+titleBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement and not isMaximized then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(0, frameStart.X.Offset + delta.X, 0, frameStart.Y.Offset + delta.Y)
+        minimizeButton.Position = UDim2.new(0, frameStart.X.Offset + delta.X, 0, frameStart.Y.Offset + delta.Y)
+        originalPosition = mainFrame.Position
+    end
+end)
+
+-- Initialize UI
+toggleUI(true)
+switchTab("loop")
+populateUnitDropdown()

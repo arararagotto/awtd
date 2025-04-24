@@ -60,6 +60,17 @@ mainFrame.ZIndex = 10
 applyCornerRadius(mainFrame, 8)
 mainFrame.Parent = screenGui
 
+-- Add background image label to mainFrame
+local backgroundImage = Instance.new("ImageLabel")
+backgroundImage.Size = UDim2.new(1, 0, 1, 0)
+backgroundImage.Position = UDim2.new(0, 0, 0, 0)
+backgroundImage.BackgroundTransparency = 0.5 -- Semi-transparent background
+backgroundImage.Image = "rbxassetid://128252825948102" -- Use asset ID format for Roblox image
+backgroundImage.ScaleType = Enum.ScaleType.Stretch -- Ensure image fits the frame size
+backgroundImage.ZIndex = 10 -- Set ZIndex higher to be above mainFrame background but below UI elements
+backgroundImage.ImageTransparency = 0.2
+backgroundImage.Parent = mainFrame
+
 -- Drop shadow effect
 local shadow = Instance.new("ImageLabel")
 shadow.Name = "Shadow"
@@ -105,7 +116,7 @@ controlsFrame.Parent = titleBar
 
 local minimizeBtn = Instance.new("TextButton")
 minimizeBtn.Size = UDim2.new(0, 25, 0, 25)
-minimizeBtn.Position = UDim2.new(0, 5, 0.5, -12.5)
+minimizeBtn.Position = UDim2.new(0, -15, 0, 5)
 minimizeBtn.BackgroundColor3 = theme.Warning
 minimizeBtn.Text = "_"
 minimizeBtn.TextColor3 = theme.Text
@@ -117,7 +128,7 @@ minimizeBtn.Parent = controlsFrame
 
 local maximizeBtn = Instance.new("TextButton")
 maximizeBtn.Size = UDim2.new(0, 25, 0, 25)
-maximizeBtn.Position = UDim2.new(0, 35, 0.5, -12.5)
+maximizeBtn.Position = UDim2.new(0, 15, 0, 5)
 maximizeBtn.BackgroundColor3 = theme.Success
 maximizeBtn.Text = "□"
 maximizeBtn.TextColor3 = theme.Text
@@ -129,7 +140,7 @@ maximizeBtn.Parent = controlsFrame
 
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 25, 0, 25)
-closeButton.Position = UDim2.new(0, 65, 0.5, -12.5)
+closeButton.Position = UDim2.new(0, 45, 0, 5)
 closeButton.BackgroundColor3 = theme.Danger
 closeButton.Text = "X"
 closeButton.TextColor3 = theme.Text
@@ -212,10 +223,17 @@ loopFrame.ZIndex = 10
 loopFrame.Parent = contentFrame
 
 -- Function to create input fields
-local function createInputField(labelText, defaultText, parent, rowIndex, yOffset)
+local function createInputField(labelText, defaultText, parent, yOffset)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, 0, 0, 60)
+    container.Position = UDim2.new(0, 0, 0, yOffset)
+    container.BackgroundTransparency = 1
+    container.ZIndex = 10
+    container.Parent = parent
+    
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, 0, 0, 20)
-    label.Position = UDim2.new(0, 0, 0, yOffset)
+    label.Position = UDim2.new(0, 0, 0, 0)
     label.BackgroundTransparency = 1
     label.Text = labelText
     label.TextColor3 = theme.SecondaryText
@@ -223,11 +241,11 @@ local function createInputField(labelText, defaultText, parent, rowIndex, yOffse
     label.Font = Enum.Font.Gotham
     label.TextSize = 16
     label.ZIndex = 10
-    label.Parent = parent
+    label.Parent = container
     
     local textBox = Instance.new("TextBox")
     textBox.Size = UDim2.new(1, 0, 0, 30)
-    textBox.Position = UDim2.new(0, 0, 0, yOffset + 25)
+    textBox.Position = UDim2.new(0, 0, 0, 25)
     textBox.BackgroundColor3 = theme.LightBackground
     textBox.TextColor3 = theme.Text
     textBox.Font = Enum.Font.Gotham
@@ -235,25 +253,25 @@ local function createInputField(labelText, defaultText, parent, rowIndex, yOffse
     textBox.Text = defaultText
     textBox.ZIndex = 10
     applyCornerRadius(textBox, 6)
-    textBox.Parent = parent
+    textBox.Parent = container
     
     return textBox
 end
 
 -- Ability Name input
-local abilityNameBox = createInputField("Ability Name:", "Savior of AWTD", loopFrame, 0, 10)
+local abilityNameBox = createInputField("Ability Name:", "Savior of AWTD", loopFrame, 0)
 
 -- Unit Name input
-local unitNameBox = createInputField("Unit Name (if not using selector):", "The Fear", loopFrame, 1, 60)
+local unitNameBox = createInputField("Unit Name (if not using selector):", "The Fear", loopFrame, 60)
 
 -- Delay input
-local delayBox = createInputField("Delay (seconds):", "5", loopFrame, 2, 110)
-delayBox.Size = UDim2.new(0.3, -10, 0, 30)
+local delayBox = createInputField("Delay (seconds):", "5", loopFrame, 120)
+delayBox.Size = UDim2.new(0.3, 0, 0, 30)
 
 -- Start/Stop button
 local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(0.6, -20, 0, 30)
-toggleButton.Position = UDim2.new(0.4, 10, 0, 145)
+toggleButton.Size = UDim2.new(0.6, 0, 0, 30)
+toggleButton.Position = UDim2.new(0.4, 0, 0, 180)
 toggleButton.BackgroundColor3 = theme.Success
 toggleButton.TextColor3 = theme.Text
 toggleButton.Font = Enum.Font.GothamBold
@@ -285,15 +303,15 @@ singleFrame.ZIndex = 10
 singleFrame.Parent = contentFrame
 
 -- Ability Name input for single fire
-local singleAbilityBox = createInputField("Ability Name:", "Savior of AWTD", singleFrame, 0, 10)
+local singleAbilityBox = createInputField("Ability Name:", "Savior of AWTD", singleFrame, 0)
 
 -- Unit Name input for single fire
-local singleUnitBox = createInputField("Unit Name (if not using selector):", "The Fear", singleFrame, 1, 60)
+local singleUnitBox = createInputField("Unit Name (if not using selector):", "The Fear", singleFrame, 60)
 
 -- Fire button for single mode
 local fireButton = Instance.new("TextButton")
 fireButton.Size = UDim2.new(1, -20, 0, 40)
-fireButton.Position = UDim2.new(0, 10, 0, 150)
+fireButton.Position = UDim2.new(0, 10, 0, 120)
 fireButton.BackgroundColor3 = theme.Accent
 fireButton.TextColor3 = theme.Text
 fireButton.Font = Enum.Font.GothamBold
@@ -347,9 +365,16 @@ settingsFrame.ZIndex = 10
 settingsFrame.Parent = contentFrame
 
 -- UI Scale settings
+local scaleContainer = Instance.new("Frame")
+scaleContainer.Size = UDim2.new(1, 0, 0, 100)
+scaleContainer.Position = UDim2.new(0, 0, 0, 20)
+scaleContainer.BackgroundTransparency = 1
+scaleContainer.ZIndex = 10
+scaleContainer.Parent = settingsFrame
+
 local scaleLabel = Instance.new("TextLabel")
 scaleLabel.Size = UDim2.new(1, 0, 0, 20)
-scaleLabel.Position = UDim2.new(0, 0, 0, 10)
+scaleLabel.Position = UDim2.new(0, 0, 0, 0)
 scaleLabel.BackgroundTransparency = 1
 scaleLabel.Text = "UI Scale:"
 scaleLabel.TextColor3 = theme.Text
@@ -357,14 +382,14 @@ scaleLabel.Font = Enum.Font.Gotham
 scaleLabel.TextSize = 16
 scaleLabel.TextXAlignment = Enum.TextXAlignment.Left
 scaleLabel.ZIndex = 10
-scaleLabel.Parent = settingsFrame
+scaleLabel.Parent = scaleContainer
 
 local scaleSlider = Instance.new("Frame")
-scaleSlider.Size = UDim2.new(1, 0, 0, 30)
-scaleSlider.Position = UDim2.new(0, 0, 0, 40)
+scaleSlider.Size = UDim2.new(1, -40, 0, 30)
+scaleSlider.Position = UDim2.new(0, 20, 0, 30)
 scaleSlider.BackgroundTransparency = 1
 scaleSlider.ZIndex = 10
-scaleSlider.Parent = settingsFrame
+scaleSlider.Parent = scaleContainer
 
 local sliderTrack = Instance.new("Frame")
 sliderTrack.Size = UDim2.new(1, 0, 0, 6)
@@ -391,7 +416,7 @@ sliderThumb.Parent = scaleSlider
 
 local scaleMinLabel = Instance.new("TextLabel")
 scaleMinLabel.Size = UDim2.new(0, 40, 0, 20)
-scaleMinLabel.Position = UDim2.new(0, 0, 1, 5)
+scaleMinLabel.Position = UDim2.new(0, -20, 1, 5)
 scaleMinLabel.BackgroundTransparency = 1
 scaleMinLabel.Text = "50%"
 scaleMinLabel.TextColor3 = theme.SecondaryText
@@ -403,7 +428,7 @@ scaleMinLabel.Parent = scaleSlider
 
 local scaleMaxLabel = Instance.new("TextLabel")
 scaleMaxLabel.Size = UDim2.new(0, 40, 0, 20)
-scaleMaxLabel.Position = UDim2.new(1, -40, 1, 5)
+scaleMaxLabel.Position = UDim2.new(1, -20, 1, 5)
 scaleMaxLabel.BackgroundTransparency = 1
 scaleMaxLabel.Text = "150%"
 scaleMaxLabel.TextColor3 = theme.SecondaryText
@@ -415,14 +440,14 @@ scaleMaxLabel.Parent = scaleSlider
 
 local scaleValueLabel = Instance.new("TextLabel")
 scaleValueLabel.Size = UDim2.new(1, 0, 0, 20)
-scaleValueLabel.Position = UDim2.new(0, 0, 0, 80)
+scaleValueLabel.Position = UDim2.new(0, 0, 0, 70)
 scaleValueLabel.BackgroundTransparency = 1
 scaleValueLabel.Text = "Current Scale: 100%"
 scaleValueLabel.TextColor3 = theme.Text
 scaleValueLabel.Font = Enum.Font.GothamBold
 scaleValueLabel.TextSize = 16
 scaleValueLabel.ZIndex = 10
-scaleValueLabel.Parent = settingsFrame
+scaleValueLabel.Parent = scaleContainer
 
 -- Credits
 local creditsLabel = Instance.new("TextLabel")
@@ -786,14 +811,15 @@ end)
 
 -- Scale slider functionality
 local function updateScaleSlider(pos)
-    local percent = math.clamp((pos.X.Offset - scaleSlider.AbsolutePosition.X) / scaleSlider.AbsoluteSize.X, 0, 1)
+    local absoluteX = pos.X - scaleSlider.AbsolutePosition.X
+    local percent = math.clamp(absoluteX / scaleSlider.AbsoluteSize.X, 0, 1)
     local scale = 0.5 + percent -- Range from 0.5 to 1.5
     sliderFill.Size = UDim2.new(percent, 0, 1, 0)
     sliderThumb.Position = UDim2.new(percent, -8, 0.5, -8)
     scaleValueLabel.Text = "Current Scale: "..math.floor(scale * 100).."%"
 end
 
-scaleSlider.InputBegan:Connect(function(input)
+local function onSliderInput(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         updateScaleSlider(input.Position)
         
@@ -804,18 +830,26 @@ scaleSlider.InputBegan:Connect(function(input)
             end
         end)
 
+        local function disconnect()
+            connection:Disconnect()
+            
+            -- Apply the scale
+            local percent = sliderFill.Size.X.Scale
+            local scale = 0.5 + percent
+            applyUIScale(scale)
+        end
+
         UserInputService.InputEnded:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                connection:Disconnect()
-                
-                -- Apply the scale
-                local percent = sliderFill.Size.X.Scale
-                local scale = 0.5 + percent
-                applyUIScale(scale)
+                disconnect()
             end
         end)
     end
-end)
+end
+
+scaleSlider.InputBegan:Connect(onSliderInput)
+sliderThumb.InputBegan:Connect(onSliderInput)
+sliderTrack.InputBegan:Connect(onSliderInput)
 
 -- Make window draggable
 local dragging = false

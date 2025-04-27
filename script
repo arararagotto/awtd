@@ -12,10 +12,17 @@ if existingGui then
     existingGui:Destroy()
 end
 
+if game.Players.LocalPlayer.UserId == 5556091528 or 871627395 or 3196791642 then
+    print("correct")
+else
+    game.Players.LocalPlayer:Kick("That wasn't supposed to happen")
+end
+
 -- Create main UI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "RemoteFirerUI"
 screenGui.Parent = playerGui
+screenGui.ResetOnSpawn = false
 
 -- UI Theme
 local theme = {
@@ -116,7 +123,7 @@ controlsFrame.Parent = titleBar
 
 local minimizeBtn = Instance.new("TextButton")
 minimizeBtn.Size = UDim2.new(0, 25, 0, 25)
-minimizeBtn.Position = UDim2.new(0, -15, 0, 5)
+minimizeBtn.Position = UDim2.new(0, -15, 0.5, -10)
 minimizeBtn.BackgroundColor3 = theme.Warning
 minimizeBtn.Text = "_"
 minimizeBtn.TextColor3 = theme.Text
@@ -128,7 +135,7 @@ minimizeBtn.Parent = controlsFrame
 
 local maximizeBtn = Instance.new("TextButton")
 maximizeBtn.Size = UDim2.new(0, 25, 0, 25)
-maximizeBtn.Position = UDim2.new(0, 15, 0, 5)
+maximizeBtn.Position = UDim2.new(0, 15, 0.5, -10)
 maximizeBtn.BackgroundColor3 = theme.Success
 maximizeBtn.Text = "□"
 maximizeBtn.TextColor3 = theme.Text
@@ -140,7 +147,7 @@ maximizeBtn.Parent = controlsFrame
 
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 25, 0, 25)
-closeButton.Position = UDim2.new(0, 45, 0, 5)
+closeButton.Position = UDim2.new(0, 45, 0.5, -10)
 closeButton.BackgroundColor3 = theme.Danger
 closeButton.Text = "X"
 closeButton.TextColor3 = theme.Text
